@@ -1,0 +1,10 @@
+﻿<Window x:Class="aplikacjaPogody3._0.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF" 
+        Title="MainWindow" Height="350" Width="525">
+
+    <Grid>
+        <m:Map CredentialsProvider="INSERT_YOUR_BING_MAPS_KEY" Center="0,0" ZoomLevel="1" MouseDoubleClick="MapWithPushpins_MouseDoubleClick" x:Name="myMap" />
+    </Grid>
+</Window>
