@@ -1,29 +1,24 @@
 ﻿using Microsoft.Maps.MapControl.WPF;
-using OpenWeather;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Net;
+using System.IO;
+using OpenWeatherMap.Cache;
+using static OpenWeatherMap.Cache.Enums;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices.JavaScript;
+using Newtonsoft.Json.Linq;
+
 
 namespace aplikacjaPogody3._0
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+
         string cords;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -60,44 +55,26 @@ namespace aplikacjaPogody3._0
 
                 string czesc1 = czesci[0] + "," + czesci[1];
                 string czesc2 = czesci[2] + "," + czesci[3];
-                Trace.WriteLine(czesc2+" "+czesc1);
+                Trace.WriteLine(czesc2 + " " + czesc1);
 
                 double kordynator1 = Convert.ToDouble(czesc1);
                 double kordynator2 = Convert.ToDouble(czesc2);
 
 
-                // get the closest station to 29.3389, -98.4717 lat/lon
-                if (!OpenWeather.StationDictionary.TryGetClosestStation(kordynator1, kordynator2, out var stationInfo))
+                //bc18bb44ffc23c93706f5655fa470332
+                string part=  "minutely,daily" ;
+                string call = $"https://api.openweathermap.org/data/3.0/onecall?lat={kordynator1}&lon={kordynator2}&appid=bc18bb44ffc23c93706f5655fa470332&exclude={part}";
+                HttpWebRequest zapytanie = (HttpWebRequest)WebRequest.Create(call);
+                HttpWebResponse wynik = (HttpWebResponse)zapytanie.GetResponse();
+                Stream resStream = wynik.GetResponseStream();
+                StreamReader aaa = new StreamReader(resStream);
+                string zaza = aaa.ReadToEnd();
+                JObject bbb = JObject.Parse(zaza);
+
+                foreach(var okej in bbb)
                 {
-                    Console.WriteLine($@"Could not find a station.");
-                    return;
+                    Trace.WriteLine(okej.Key+" "+okej.Value);
                 }
-
-                Trace.WriteLine($@"Name: {stationInfo.Name}");
-                Trace.WriteLine($@"ICAO: {stationInfo.ICAO}");
-                Trace.WriteLine($@"Lat/Lon: {stationInfo.Latitude}, {stationInfo.Longitude}");
-                Trace.WriteLine($@"Elevation: {stationInfo.Elevation}m");
-                Trace.WriteLine($@"Country: {stationInfo.Country}");
-                Trace.WriteLine($@"Region: {stationInfo.Region}");
-
-                // get a MetarStation and autoupdate every 30 minutes
-                // you can change this via Settings._UpdateIntervalSeconds = yourValue
-                var metarStation = stationInfo.AsMetarStation(true, true);
-
-                // subscribe to updates on the station
-                _ = metarStation.Subscribe(x =>
-                {
-                    Trace.WriteLine("\n\nCurrent METAR Report:");
-                    Trace.WriteLine($@"Temperature: {x.Temperature}C");
-                    Trace.WriteLine($@"Wind Heading: {x.WindHeading}");
-                    Trace.WriteLine($@"Wind Speed: {x.WindSpeed}Kts");
-                    Trace.WriteLine($@"Dewpoint: {x.Dewpoint}");
-                    Trace.WriteLine($@"Visibility: {x.Visibility}Km");
-                    Trace.WriteLine($@"Presure: {x.Pressure}Pa");
-                });
-
-                //Console.ReadLine();
-
             }
             catch
             {

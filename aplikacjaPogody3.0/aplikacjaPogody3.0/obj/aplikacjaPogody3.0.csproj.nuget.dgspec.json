@@ -49,9 +49,13 @@
               "target": "Package",
               "version": "[1.0.0.3, )"
             },
-            "OpenWeather": {
+            "Newtonsoft.Json": {
               "target": "Package",
-              "version": "[2.2.1, )"
+              "version": "[13.0.3, )"
+            },
+            "OpenWeatherMap.Cache": {
+              "target": "Package",
+              "version": "[1.10.3, )"
             }
           },
           "imports": [
