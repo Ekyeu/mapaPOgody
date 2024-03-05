@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "E0LSOUfA3zMDMlk7HYbhFniSgJPx4nZH+hQAEKW4rCuE72GjoL3HYGzWKDsxGif4obONgMVjkYIR/2a9iQpfZA==",
+  "dgSpecHash": "dagkqdNll5OBRLUefhCprF8hbjlJ/cDlReNEQFmC6SKmSAF/aQNxN/Num6Zlb9xr/b8UI8pN2nEWvBZnNUO7WQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\student\\source\\repos\\aplikacjaPogody3.0\\aplikacjaPogody3.0\\aplikacjaPogody3.0.csproj",
+  "projectFilePath": "C:\\Users\\student\\source\\repos\\mapaPOgody-main\\aplikacjaPogody3.0\\aplikacjaPogody3.0\\aplikacjaPogody3.0.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\student\\.nuget\\packages\\asynckeyedlock\\6.3.4\\asynckeyedlock.6.3.4.nupkg.sha512",
     "C:\\Users\\student\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\8.0.0\\microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",

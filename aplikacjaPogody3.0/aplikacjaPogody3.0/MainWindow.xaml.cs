@@ -10,7 +10,12 @@ using static OpenWeatherMap.Cache.Enums;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices.JavaScript;
 using Newtonsoft.Json.Linq;
-
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.Net.Http;
+using OpenWeatherMap.Cache.Models;
+using System.Drawing;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace aplikacjaPogody3._0
 {
@@ -29,56 +34,183 @@ namespace aplikacjaPogody3._0
 
         private void MapWithPushpins_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // Disables the default mouse double-click action.
+            //usuwa bazowe funkcje double click
             e.Handled = true;
+            //pobiera pozyvcje myszki z mapy
+            System.Windows.Point pozycjaMyszki = e.GetPosition(this);
 
-            // Determin the location to place the pushpin at on the map.
 
-            //Get the mouse click coordinates
-            Point mousePosition = e.GetPosition(this);
-            //Convert the mouse coordinates to a locatoin on the map
-            Microsoft.Maps.MapControl.WPF.Location pinLocation = myMap.ViewportPointToLocation(mousePosition);
+            //lol
+            var location = myMap.ViewportPointToLocation(pozycjaMyszki);
 
-            // The pushpin to add to the map.
+
+            //pozycja myszki na koordynaty
+            Microsoft.Maps.MapControl.WPF.Location koordynaty = myMap.ViewportPointToLocation(pozycjaMyszki);
+
+
+            //dodanie znacznika do mapy
             Pushpin pin = new Pushpin();
-            pin.Location = pinLocation;
+            pin.Location = koordynaty;
 
-            cords = pinLocation.ToString();
-            Trace.WriteLine(pinLocation);
+            //cords = koordynaty.ToString();
+            Trace.WriteLine(koordynaty);
 
-            // Adds the pushpin to the map. i usuwa poprzednie piny
+            //dodaje znacznik i usuwa poprzednie znaczniki (maks 1)
             myMap.Children.Clear();
             myMap.Children.Add(pin);
-            try
+
+            var zapytanieLokalizacja = "&lat=" + pin.Location.Latitude + "&lon=" + pin.Location.Longitude;
+            pytanieOLokalizacje(zapytanieLokalizacja);
+        }
+
+        private void pytanieOLokalizacje(string text)
+        {
+            HttpClient polaczeniezserwerami = new HttpClient();
+
+            //$"https://api.openweathermap.org/data/3.0/onecall?lat={kordynator1}&lon={kordynator2}&appid=bc18bb44ffc23c93706f5655fa470332&exclude={part}"
+            Uri uri = new Uri("https://api.openweathermap.org/data/2.5/forecast?appid=bc18bb44ffc23c93706f5655fa470332&cnt=3&units=metric" + text);
+
+            var odpowiedzAPI = polaczeniezserwerami.GetAsync(uri).Result;
+
+            if (odpowiedzAPI.IsSuccessStatusCode)
             {
-                string[] czesci = cords.Split(',');
+                OWApiResponse forecast = JsonConvert.DeserializeObject<OWApiResponse>(odpowiedzAPI.Content.ReadAsStringAsync().Result);
+                pokazanieAPI.Text = "";
 
-                string czesc1 = czesci[0] + "," + czesci[1];
-                string czesc2 = czesci[2] + "," + czesci[3];
-                Trace.WriteLine(czesc2 + " " + czesc1);
+                pokazanieAPI.Text = $"{forecast.list[0].dt_txt}\n" +
+                    $"temp -> {forecast.list[0].main.temp}\n" +
+                    $"feels like -> {forecast.list[0].main.feels_like}\n" +
+                    $"temp min -> {forecast.list[0].main.temp_min}\n" +
+                    $"temp max -> {forecast.list[0].main.temp_max}\n" +
+                    $"pressure -> {forecast.list[0].main.pressure}\n" +
+                    $"wind speed - > {forecast.list[0].wind.speed}\n" +
+                    $"cloudiness(%) - > {forecast.list[0].clouds.all}\n" +
+                    $"humidity(%) - > {forecast.list[0].main.humidity}\n";
 
-                double kordynator1 = Convert.ToDouble(czesc1);
-                double kordynator2 = Convert.ToDouble(czesc2);
+                pokazanieAPI.Text += $"\n\n\n{forecast.list[1].dt_txt}\n" +
+                    $"temp -> {forecast.list[1].main.temp}\n" +
+                    $"feels like -> {forecast.list[1].main.feels_like}\n" +
+                    $"temp min -> {forecast.list[1].main.temp_min}\n" +
+                    $"temp max -> {forecast.list[1].main.temp_max}\n" +
+                    $"pressure -> {forecast.list[1].main.pressure}\n" +
+                    $"wind speed - > {forecast.list[1].wind.speed}\n" +
+                    $"cloudiness(%) - > {forecast.list[1].clouds.all}\n" +
+                    $"humidity(%) - > {forecast.list[1].main.humidity}\n";
 
-
-                //bc18bb44ffc23c93706f5655fa470332
-                string part=  "minutely,daily" ;
-                string call = $"https://api.openweathermap.org/data/3.0/onecall?lat={kordynator1}&lon={kordynator2}&appid=bc18bb44ffc23c93706f5655fa470332&exclude={part}";
-                HttpWebRequest zapytanie = (HttpWebRequest)WebRequest.Create(call);
-                HttpWebResponse wynik = (HttpWebResponse)zapytanie.GetResponse();
-                Stream resStream = wynik.GetResponseStream();
-                StreamReader aaa = new StreamReader(resStream);
-                string zaza = aaa.ReadToEnd();
-                JObject bbb = JObject.Parse(zaza);
-
-                foreach(var okej in bbb)
-                {
-                    Trace.WriteLine(okej.Key+" "+okej.Value);
-                }
             }
-            catch
+            else
             {
+                //blad
+            }
+        }
+
+        public void przyciskLokacja(object sender, EventArgs e)
+        {
+            HttpClient polaczeniezserwerami = new HttpClient();
+
+            Uri uri = new Uri("http://api.openweathermap.org/geo/1.0/direct?limit=1&appid=bc18bb44ffc23c93706f5655fa470332&q=" + textInput.Text.Replace(' ', '+'));
+
+            var odpoiwedzApi = polaczeniezserwerami.GetAsync(uri).Result;
+
+
+            var reposneconett = odpoiwedzApi.Content.ReadAsStringAsync().Result;
+
+            GeoApiResponse xxxxxxx = JsonConvert.DeserializeObject<GeoApiResponse[]>(reposneconett)[0];
+            Uri kkkkk = new Uri("https://api.openweathermap.org/data/2.5/forecast?appid=bc18bb44ffc23c93706f5655fa470332&cnt=3&units=metric" + "&lat=" + xxxxxxx.lat + "&lon=" + xxxxxxx.lon);
+
+
+            var bbbbbba = polaczeniezserwerami.GetAsync(uri).Result;
+
+
+            if (bbbbbba.IsSuccessStatusCode)
+            {
+                OWApiResponse forecast = JsonConvert.DeserializeObject<OWApiResponse>(bbbbbba.Content.ReadAsStringAsync().Result);
+                pokazanieAPI.Text = "";
+
+                pokazanieAPI.Text = $"{forecast.list[0].dt_txt}\n" +
+                    $"temp -> {forecast.list[0].main.temp}\n" +
+                    $"feels like -> {forecast.list[0].main.feels_like}\n" +
+                    $"temp min -> {forecast.list[0].main.temp_min}\n" +
+                    $"temp max -> {forecast.list[0].main.temp_max}\n" +
+                    $"pressure -> {forecast.list[0].main.pressure}\n" +
+                    $"wind speed - > {forecast.list[0].wind.speed}\n" +
+                    $"cloudiness(%) - > {forecast.list[0].clouds.all}\n" +
+                    $"humidity(%) - > {forecast.list[0].main.humidity}\n";
+
+            }
+            else
+            {
+                //blad
             }
         }
     }
+
+
+
+
+
+
+
+
+
 }
+
+
+/*
+try
+{
+    string[] czesci = cords.Split(',');
+
+    string czesc1 = czesci[0] + "," + czesci[1];
+    string czesc2 = czesci[2] + "," + czesci[3];
+    Trace.WriteLine(czesc2 + " " + czesc1);
+
+    double kordynator1 = Convert.ToDouble(czesc1);
+    double kordynator2 = Convert.ToDouble(czesc2);
+
+
+    //bc18bb44ffc23c93706f5655fa470332
+    string part=  "minutely,daily" ;
+    string call = $"https://api.openweathermap.org/data/3.0/onecall?lat={kordynator1}&lon={kordynator2}&appid=bc18bb44ffc23c93706f5655fa470332&exclude={part}";
+    HttpWebRequest zapytanie = (HttpWebRequest)WebRequest.Create(call);
+    HttpWebResponse wynik = (HttpWebResponse)zapytanie.GetResponse();
+    Stream resStream = wynik.GetResponseStream();
+    StreamReader aaa = new StreamReader(resStream);
+    string zaza = aaa.ReadToEnd();
+    JObject bbb = JObject.Parse(zaza);
+
+    foreach(var okej in bbb)
+    {
+        Trace.WriteLine(okej.Key+" "+okej.Value);
+    }
+}
+catch
+{
+}*/
+
+
+/*for (int i = 0; i < 3; i++)
+{
+    pokazanieAPI.Text += $"{forecast.list[i].dt_txt}\n" +
+        $"  temperature: {forecast.list[i].main.temp}°C" +
+        $"  sensed temperature {forecast.list[i].main.feels_like}°C\n" +
+        $"  pressure: {forecast.list[i].main.pressure}hPa\n" +
+        $"  weather: {forecast.list[i].weather[0].description}\n" +
+        $"  humidity: {forecast.list[i].main.humidity}%" +
+        $"  propability of rain: {forecast.list[i].pop}%\n" +
+        $"  cloudiness: {forecast.list[i].clouds.all}%\n" +
+        $"\n";
+}*/
+
+
+/*if (!response.IsSuccessStatusCode)
+{
+    //error
+}
+else
+{
+    var responseContent = response.Content.ReadAsStringAsync().Result;
+    GeoApiResponse geoApiResponse = JsonConvert.DeserializeObject<GeoApiResponse[]>(responseContent)[0];
+
+    pytanieOLokalizacje("&lat=" + geoApiResponse.lat + "&lon=" + geoApiResponse.lon);
+}*/
